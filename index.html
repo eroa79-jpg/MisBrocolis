@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Súper Tablero · RR SERVIPH</title>
+<style>
+:root{--bg:#f5f6f8;--card:#fff;--ink:#1c2430;--mut:#6b7686;--line:#e3e7ee;--acc:#1f5eff;--ok:#1e9e5a;--warn:#e6a100;--bad:#d64545}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:#0f1b33;color:#fff;padding:14px 24px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+header h1{font-size:18px;margin:0;flex:1}
+header button,.btn{background:#2a3a5c;color:#fff;border:0;border-radius:6px;padding:7px 12px;cursor:pointer;font:inherit}
+header button:hover,.btn:hover{background:#3a4f7c}
+main{padding:20px 24px;max-width:1400px;margin:auto}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.kpi b{display:block;font-size:24px}
+.kpi span{color:var(--mut);font-size:12px}
+.row{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:18px}
+@media(max-width:900px){.row{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.panel h2{font-size:14px;margin:0 0 10px}
+.bar{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:13px}
+.bar i{display:block;height:10px;border-radius:5px;background:var(--acc)}
+.bar em{font-style:normal;color:var(--mut);min-width:60px}
+.alert{padding:6px 0;border-bottom:1px solid var(--line);font-size:13px;cursor:pointer}
+.alert:last-child{border:0}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.tools input,.tools select{padding:7px 10px;border:1px solid var(--line);border-radius:6px;font:inherit;background:#fff}
+.tools input{flex:1;min-width:200px}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+th{background:#eef1f6;font-size:12px;color:var(--mut);cursor:pointer;user-select:none}
+tr.b:hover{background:#f0f5ff;cursor:pointer}
+.dot{display:inline-block;width:11px;height:11px;border-radius:50%;background:#c5ccd8}
+.dot.verde{background:var(--ok)}.dot.amarillo{background:var(--warn)}.dot.rojo{background:var(--bad)}
+.wrap{overflow-x:auto}
+#drawer{position:fixed;top:0;right:-480px;width:460px;max-width:100%;height:100%;background:#fff;box-shadow:-4px 0 20px #0003;transition:right .2s;padding:20px;overflow:auto;z-index:5}
+#drawer.open{right:0}
+#drawer h3{margin:0 0 4px}
+#drawer label{display:block;margin:10px 0 3px;font-size:12px;color:var(--mut)}
+#drawer input,#drawer select,#drawer textarea{width:100%;padding:7px;border:1px solid var(--line);border-radius:6px;font:inherit}
+#drawer textarea{min-height:80px}
+.meta{color:var(--mut);font-size:13px;margin-bottom:6px}
+.x{float:right;background:none;border:0;font-size:22px;cursor:pointer}
+.links a{display:inline-block;margin:3px 6px 0 0;font-size:12px;color:var(--acc)}
+footer{color:var(--mut);font-size:12px;padding:20px 24px;text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <h1>Súper Tablero · RR SERVIPH SAS</h1>
+  <button onclick="exportar()">Exportar datos</button>
+  <button onclick="document.getElementById('imp').click()">Importar</button>
+  <input id="imp" type="file" accept=".json" hidden onchange="importar(this)">
+</header>
+<main>
+  <div class="kpis" id="kpis"></div>
+  <div class="row">
+    <div class="panel"><h2>Carga por responsable (edificios · apartamentos)</h2><div id="carga"></div></div>
+    <div class="panel"><h2>Alertas</h2><div id="alertas"></div></div>
+  </div>
+  <div class="tools">
+    <input id="q" placeholder="Buscar edificio, NIT o dirección…" oninput="render()">
+    <select id="fr" onchange="render()"></select>
+    <select id="fa" onchange="render()"></select>
+    <select id="fs" onchange="render()">
+      <option value="">Todos los estados</option><option>rojo</option><option>amarillo</option><option>verde</option><option>sin dato</option>
+    </select>
+  </div>
+  <div class="wrap"><table>
+    <thead><tr id="th"></tr></thead><tbody id="tb"></tbody>
+  </table></div>
+</main>
+<footer>Datos base: <i>INF EDIFICIOS.xlsx</i> (OneDrive · 01. EDIFICIOS). Los campos financieros y jurídicos se editan en cada ficha y se guardan en este navegador; usa Exportar para respaldarlos.</footer>
+
+<aside id="drawer"></aside>
+
+<script>
+// ---- Datos base (fuente: INF EDIFICIOS.xlsx). Sin claves ni wifi. ----
+const BASE=[
+["ALBEROBELLO","900154519-6","Carrera 16 #86A-65",10,"3053395843","Liliana B","Halisson","A"],
+["AMERICANO","800162359-5","Carrera 13 #38-76",102,"2856292","Josmary Veliz","Halisson","A/E"],
+["BASIKA 71","900616402-7","Calle 71 #3-07",29,"3176490940","Liliana B","Leydi","E"],
+["CABRERA 85 12","901740682-6","Calle 85 #12-42",104,"3166928143","Liliana B","Leydi","E"],
+["CALABRIA VIRREY","900600372-4","Carrera 19 #85-38",24,"3118413817","Andres R","Leydi","E"],
+["CANVAS","901569378-1","Carrera 11 No 93A-38",32,"3164601531","Andres R","Leydi","A"],
+["COUNTRY VIRREY PH","900207480-7","Cra 19b No 85-75",11,"3150686716","Liliana B","Halisson","E"],
+["EGOBOX M35","900390128-0","Carrera 19 #86a-78",11,"2181870","Josmary Veliz","Adriana","E"],
+["ESPACIO 86 PH","900186436-0","Calle 86 No 18-24",13,"3160531948","Liliana B","Halisson","R"],
+["KUBIK 4","901473130-7","Calle 86A 19B26 – Cra 19A #86A-16",50,"3152533551","Andres R","Leydi","R"],
+["NEXT LIVING 57","901676373-1","Calle 57 8-25",118,"3159079991","Liliana B","—","R"],
+["PORTAL II","900015079-1","Carrera 21 No 94-27",16,"","Andres R","Halisson","A"],
+["PRADOS DEL COUNTRY","830083052-1","Carrera 19b #85-54",22,"3124545883","Josmary Veliz","Leydi","E"],
+["PROA","901255344-1","Cra 19a No 85-93",24,"","Josmary Veliz","Leydi","R"],
+["RINCON DE LA CABRERA","830138423-7","Carrera 9 #89-40",8,"3228233305","Josmary Veliz","Halisson","E"],
+["RIONIMA 1","900091047-1","Carrera 21 No 106b-62",12,"","Josmary Veliz","Halisson","E"],
+["SOLAR DEL VIRREY","900535043-8","Carrera 16 #85-47",25,"3154874099","Andres R","Halisson","A"],
+["TRUANDO","830001881-8","Cra 18 No 85-90/94",26,"3007754328","Josmary Veliz","Leydi","E"],
+["TRIBECA94","901889430-8","Calle 87 No 19c 41",112,"3178586610","Andres R","Halisson","R"],
+["TIVOLI","830022428-4","Calle 95 16-23",12,"3153031757","—","—","R"],
+["DC","901472732-6","Carrera 19b #85-71",23,"","—","—",""]
+].map(r=>({nombre:r[0],nit:r[1],dir:r[2],aptos:r[3],porteria:r[4],resp:r[5],apoyo:r[6],grupo:r[7]}));
+// Las 72 HUB / ALMA 72 existen en OneDrive pero no están en INF EDIFICIOS.xlsx; se agregan aquí.
+BASE.unshift({nombre:"72 HUB",nit:"",dir:"",aptos:null,porteria:"",resp:"—",apoyo:"—",grupo:""},
+             {nombre:"ALMA 72",nit:"",dir:"",aptos:null,porteria:"",resp:"—",apoyo:"—",grupo:""});
+
+const FIELDS=[
+ ["estado","Estado general","sel",["sin dato","verde","amarillo","rojo"]],
+ ["cartera","Cartera en mora (COP)","num"],
+ ["flujo","Saldo de caja (COP)","num"],
+ ["juridico","Procesos jurídicos abiertos","num"],
+ ["consejo","Próximo consejo / asamblea","date"],
+ ["vence","Próximo vencimiento (contrato, póliza, DIAN)","date"],
+ ["pendientes","Pendientes / notas","txt"]
+];
+const KEY="rr-tablero-v1";
+let EXTRA=JSON.parse(localStorage.getItem(KEY)||"{}");
+let sortBy="nombre",sortDir=1;
+const ONEDRIVE="https://rrserviph-my.sharepoint.com/personal/gerencia_rrserviph_com/Documents/01.%20EDIFICIOS/";
+const SECCIONES=["00 — Identificación y ficha maestra","01 — Gobierno y representación","02 — Asambleas y consejos","03 — Finanzas y cartera","04 — Contratos y proveedores","05 — Jurídico y peticiones","06 — Operación y mantenimiento","07 — Proyectos y obras","08 — Comunicaciones","09 — Seguimiento"];
+
+const $=id=>document.getElementById(id);
+const fmt=n=>n==null||n===""?"—":new Intl.NumberFormat("es-CO",{style:"currency",currency:"COP",maximumFractionDigits:0}).format(n);
+const get=(b,k)=>(EXTRA[b.nombre]||{})[k];
+const estado=b=>get(b,"estado")||"sin dato";
+const save=()=>localStorage.setItem(KEY,JSON.stringify(EXTRA));
+const dias=d=>d?Math.ceil((new Date(d)-new Date(new Date().toDateString()))/864e5):null;
+
+function uniq(k){return [...new Set(BASE.map(b=>b[k]).filter(x=>x&&x!=="—"))].sort()}
+function initFilters(){
+  $("fr").innerHTML='<option value="">Todos los responsables</option>'+uniq("resp").map(x=>`<option>${x}</option>`).join("");
+  $("fa").innerHTML='<option value="">Todo apoyo contable</option>'+uniq("apoyo").map(x=>`<option>${x}</option>`).join("");
+}
+function filtered(){
+  const q=$("q").value.toLowerCase(),fr=$("fr").value,fa=$("fa").value,fs=$("fs").value;
+  return BASE.filter(b=>(!q||(b.nombre+b.nit+b.dir).toLowerCase().includes(q))&&(!fr||b.resp===fr)&&(!fa||b.apoyo===fa)&&(!fs||estado(b)===fs));
+}
+const COLS=[
+ ["estado","",b=>`<span class="dot ${estado(b).replace(" ","")==="sindato"?"":estado(b)}"></span>`,b=>estado(b)],
+ ["nombre","Edificio",b=>"<b>"+b.nombre+"</b>",b=>b.nombre],
+ ["aptos","Aptos",b=>b.aptos??"—",b=>b.aptos||0],
+ ["resp","Responsable",b=>b.resp,b=>b.resp],
+ ["apoyo","Apoyo contable",b=>b.apoyo,b=>b.apoyo],
+ ["cartera","Cartera en mora",b=>fmt(get(b,"cartera")),b=>+get(b,"cartera")||0],
+ ["flujo","Saldo de caja",b=>fmt(get(b,"flujo")),b=>+get(b,"flujo")||0],
+ ["juridico","Jurídicos",b=>get(b,"juridico")||"—",b=>+get(b,"juridico")||0],
+ ["consejo","Próx. consejo",b=>get(b,"consejo")||"—",b=>get(b,"consejo")||"9999"]
+];
+function render(){
+  $("th").innerHTML=COLS.map(c=>`<th onclick="sortBy='${c[0]}';sortDir=sortBy==='${c[0]}'&&window._l==='${c[0]}'?-sortDir:1;window._l='${c[0]}';render()">${c[1]}</th>`).join("");
+  const col=COLS.find(c=>c[0]===sortBy)||COLS[1];
+  const rows=filtered().sort((a,b)=>{const x=col[3](a),y=col[3](b);return (x>y?1:x<y?-1:0)*sortDir});
+  $("tb").innerHTML=rows.map(b=>`<tr class="b" onclick="abrir('${b.nombre}')">${COLS.map(c=>`<td>${c[2](b)}</td>`).join("")}</tr>`).join("")||'<tr><td colspan="9">Sin resultados</td></tr>';
+  kpis(rows);carga();alertas();
+}
+function kpis(rows){
+  const sum=k=>BASE.reduce((s,b)=>s+(+get(b,k)||0),0);
+  const e=s=>BASE.filter(b=>estado(b)===s).length;
+  $("kpis").innerHTML=[
+   [BASE.length,"Edificios administrados"],
+   [BASE.reduce((s,b)=>s+(b.aptos||0),0),"Apartamentos (sin 72 HUB / ALMA 72)"],
+   [fmt(sum("cartera")),"Cartera en mora total"],
+   [fmt(sum("flujo")),"Saldo de caja total"],
+   [sum("juridico"),"Procesos jurídicos abiertos"],
+   [`${e("rojo")} / ${e("amarillo")} / ${e("verde")}`,"Rojo / Amarillo / Verde"],
+   [e("sin dato"),"Edificios sin datos cargados"]
+  ].map(k=>`<div class="kpi"><b>${k[0]}</b><span>${k[1]}</span></div>`).join("");
+}
+function carga(){
+  const m={};BASE.forEach(b=>{const r=b.resp;m[r]=m[r]||{e:0,a:0};m[r].e++;m[r].a+=b.aptos||0});
+  const max=Math.max(...Object.values(m).map(x=>x.a))||1;
+  $("carga").innerHTML=Object.entries(m).sort((a,b)=>b[1].a-a[1].a).map(([r,v])=>`<div class="bar"><em style="min-width:110px">${r}</em><i style="width:${v.a/max*55}%"></i><span>${v.e} edif. · ${v.a} aptos</span></div>`).join("");
+}
+function alertas(){
+  const out=[];
+  BASE.forEach(b=>{
+    if(estado(b)==="rojo")out.push([0,b,"Estado en rojo"]);
+    [["consejo","Consejo / asamblea"],["vence","Vencimiento"]].forEach(([k,t])=>{
+      const d=dias(get(b,k));if(d!=null&&d<=14)out.push([d<0?-1:1,b,`${t}: ${d<0?"vencido hace "+(-d)+" d":d===0?"hoy":"en "+d+" d"}`]);
+    });
+    if(+get(b,"juridico")>0)out.push([2,b,`${get(b,"juridico")} proceso(s) jurídico(s)`]);
+  });
+  out.sort((a,b)=>a[0]-b[0]);
+  $("alertas").innerHTML=out.slice(0,12).map(a=>`<div class="alert" onclick="abrir('${a[1].nombre}')"><b>${a[1].nombre}</b> — ${a[2]}</div>`).join("")||'<span style="color:var(--mut)">Sin alertas. Carga fechas y estados en las fichas.</span>';
+}
+function abrir(n){
+  const b=BASE.find(x=>x.nombre===n),d=EXTRA[n]||{};
+  $("drawer").innerHTML=`<button class="x" onclick="cerrar()">×</button><h3>${b.nombre}</h3>
+  <div class="meta">NIT ${b.nit||"—"} · ${b.dir||"—"}<br>${b.aptos??"—"} aptos · Portería ${b.porteria||"—"}<br>Responsable: ${b.resp} · Apoyo contable: ${b.apoyo}</div>
+  <div class="links"><b>OneDrive:</b><br>${SECCIONES.map(s=>`<a target="_blank" href="${ONEDRIVE}${encodeURIComponent(b.nombre)}/${encodeURIComponent(s)}">${s.slice(0,2)} ${s.slice(5)}</a>`).join("")}</div>
+  ${FIELDS.map(([k,l,t,o])=>`<label>${l}</label>`+(t==="sel"?`<select data-k="${k}">${o.map(x=>`<option ${((d[k]||"sin dato")===x)?"selected":""}>${x}</option>`).join("")}</select>`
+    :t==="txt"?`<textarea data-k="${k}">${d[k]||""}</textarea>`
+    :`<input data-k="${k}" type="${t==="num"?"number":"date"}" value="${d[k]||""}">`)).join("")}
+  <p><button class="btn" style="background:var(--acc)" onclick="guardar('${n}')">Guardar</button></p>`;
+  $("drawer").classList.add("open");
+}
+function cerrar(){$("drawer").classList.remove("open")}
+function guardar(n){
+  const d={};document.querySelectorAll("#drawer [data-k]").forEach(e=>{if(e.value)d[e.dataset.k]=e.value});
+  EXTRA[n]=d;save();cerrar();render();
+}
+function exportar(){
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(EXTRA,null,2)],{type:"application/json"}));
+  a.download="tablero-rr-datos.json";a.click();
+}
+function importar(i){
+  const f=i.files[0];if(!f)return;
+  f.text().then(t=>{EXTRA=JSON.parse(t);save();render()});
+}
+initFilters();render();
+</script>
+</body>
+</html>
