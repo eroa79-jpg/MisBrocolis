@@ -61,6 +61,7 @@ footer{color:var(--mut);font-size:12px;padding:20px 24px;text-align:center}
     <div class="panel"><h2>Carga por responsable (edificios · apartamentos)</h2><div id="carga"></div></div>
     <div class="panel"><h2>Alertas</h2><div id="alertas"></div></div>
   </div>
+  <div class="panel" style="margin-bottom:18px"><h2>Documentos que más faltan (% de edificios sin el documento)</h2><div id="req"></div></div>
   <div class="tools">
     <input id="q" placeholder="Buscar edificio, NIT o dirección…" oninput="render()">
     <select id="fr" onchange="render()"></select>
@@ -73,7 +74,7 @@ footer{color:var(--mut);font-size:12px;padding:20px 24px;text-align:center}
     <thead><tr id="th"></tr></thead><tbody id="tb"></tbody>
   </table></div>
 </main>
-<footer>Datos base: <i>INF EDIFICIOS.xlsx</i> (OneDrive · 01. EDIFICIOS). Los campos financieros y jurídicos se editan en cada ficha y se guardan en este navegador; usa Exportar para respaldarlos.</footer>
+<footer>Datos base: <i>INF EDIFICIOS.xlsx</i> e <i>Inventario_Informacion_Faltante_Copropiedades.xlsx</i> (OneDrive, corte 23-oct-2026). Los campos financieros y jurídicos se editan en cada ficha y se guardan en este navegador; usa Exportar para respaldarlos.</footer>
 
 <aside id="drawer"></aside>
 
@@ -100,11 +101,22 @@ const BASE=[
 ["TRUANDO","830001881-8","Cra 18 No 85-90/94",26,"3007754328","Josmary Veliz","Leydi","E"],
 ["TRIBECA94","901889430-8","Calle 87 No 19c 41",112,"3178586610","Andres R","Halisson","R"],
 ["TIVOLI","830022428-4","Calle 95 16-23",12,"3153031757","—","—","R"],
-["DC","901472732-6","Carrera 19b #85-71",23,"","—","—",""]
+["EDIFICIO DC","901472732-6","Carrera 19b #85-71",23,"","—","—",""]
 ].map(r=>({nombre:r[0],nit:r[1],dir:r[2],aptos:r[3],porteria:r[4],resp:r[5],apoyo:r[6],grupo:r[7]}));
-// Las 72 HUB / ALMA 72 existen en OneDrive pero no están en INF EDIFICIOS.xlsx; se agregan aquí.
-BASE.unshift({nombre:"72 HUB",nit:"",dir:"",aptos:null,porteria:"",resp:"—",apoyo:"—",grupo:""},
+// 72 HUB, ALMA 72 y UNIQUE MINE existen en OneDrive pero no están en INF EDIFICIOS.xlsx; se agregan aquí.
+BASE.push({nombre:"UNIQUE MINE",nit:"",dir:"",aptos:223,porteria:"",resp:"—",apoyo:"—",grupo:""});
+BASE.unshift({nombre:"72 HUB",nit:"",dir:"",aptos:904,porteria:"",resp:"—",apoyo:"—",grupo:""},
              {nombre:"ALMA 72",nit:"",dir:"",aptos:null,porteria:"",resp:"—",apoyo:"—",grupo:""});
+
+
+// ---- Inventario de información faltante (Inventario_Informacion_Faltante_Copropiedades.xlsx, corte 23-oct-2026) ----
+// [archivos, completo, parcial, vencido, falta, % completitud, prioridad]
+const INV={"72 HUB":[1363,4,10,0,5,47,"Media"],"ALBEROBELLO":[15,4,4,0,10,33,"Alta"],"AMERICANO":[16,4,4,1,9,33,"Alta"],"BASIKA 71":[26,3,2,4,9,22,"Alta"],"CABRERA 85 12":[174,3,8,2,6,37,"Media"],"CALABRIA VIRREY":[25,4,3,2,9,31,"Alta"],"CANVAS":[94,4,5,2,7,36,"Media"],"COUNTRY VIRREY PH":[45,7,3,2,6,47,"Media"],"EDIFICIO DC":[1493,6,9,2,1,58,"Media"],"EGOBOX M35":[2048,1,7,1,9,25,"Alta"],"ESPACIO 86 PH":[47,4,3,1,10,31,"Alta"],"KUBIK 4":[39,3,4,2,9,28,"Alta"],"NEXT LIVING 57":[32,4,3,2,10,29,"Alta"],"PORTAL II":[12,4,2,0,12,28,"Alta"],"PRADOS DEL COUNTRY":[49,4,7,1,6,42,"Media"],"PROA":[37,4,3,2,9,31,"Alta"],"RINCON DE LA CABRERA":[90,3,2,1,12,22,"Alta"],"RIONIMA 1":[11,3,3,0,12,25,"Alta"],"SOLAR DEL VIRREY":[21,4,4,1,9,33,"Alta"],"TIVOLI":[30,5,4,0,9,39,"Media"],"TRIBECA94":[19,1,5,0,12,19,"Alta"],"TRUANDO":[50,2,4,2,10,22,"Alta"],"UNIQUE MINE":[204,5,11,0,3,55,"Media"]};
+// Requisito, completo, parcial, vencido, falta, % de edificios sin el documento
+const REQ=[["Historia clínica SG-SST de la copropiedad",0,1,0,22,96],["Certificado de existencia y representación vigente",3,0,14,6,87],["Reglamento de PH (escritura y reformas)",2,2,0,19,83],["Contrato de administración firmado",0,4,0,19,83],["Acta de asamblea 2026 firmada",1,3,0,19,83],["Actas de consejo",2,3,0,18,78],["Mantenimientos y certificaciones",0,5,2,16,78],["Libro de copropietarios / residentes",0,5,0,18,78],["Manual de convivencia vigente",4,2,1,16,74],["Certificación bancaria",0,9,0,14,61]];
+REQ[0][0]="SG-SST de la copropiedad";
+const inv=b=>INV[b.nombre];
+const INVT=(()=>{const v=Object.values(INV),S=i=>v.reduce((a,x)=>a+x[i],0),c=S(1),p=S(2),ve=S(3),f=S(4);return{falta:f,venc:ve,pct:Math.round((c+p/2)/(c+p+ve+f)*100)}})();
 
 const FIELDS=[
  ["estado","Estado general","sel",["sin dato","verde","amarillo","rojo"]],
@@ -146,27 +158,36 @@ const COLS=[
  ["cartera","Cartera en mora",b=>fmt(get(b,"cartera")),b=>+get(b,"cartera")||0],
  ["flujo","Saldo de caja",b=>fmt(get(b,"flujo")),b=>+get(b,"flujo")||0],
  ["juridico","Jurídicos",b=>get(b,"juridico")||"—",b=>+get(b,"juridico")||0],
+ ["docs","Docs %",b=>inv(b)?`<b style="color:${inv(b)[5]<35?'var(--bad)':inv(b)[5]<60?'var(--warn)':'var(--ok)'}">${inv(b)[5]}%</b>`:"—",b=>inv(b)?inv(b)[5]:-1],
+ ["falta","Faltan / vencidos",b=>inv(b)?`${inv(b)[4]} / ${inv(b)[3]}`:"—",b=>inv(b)?inv(b)[4]:-1],
+ ["prio","Prioridad",b=>inv(b)?inv(b)[6]:"—",b=>inv(b)?inv(b)[6]:""],
  ["consejo","Próx. consejo",b=>get(b,"consejo")||"—",b=>get(b,"consejo")||"9999"]
 ];
 function render(){
   $("th").innerHTML=COLS.map(c=>`<th onclick="sortBy='${c[0]}';sortDir=sortBy==='${c[0]}'&&window._l==='${c[0]}'?-sortDir:1;window._l='${c[0]}';render()">${c[1]}</th>`).join("");
   const col=COLS.find(c=>c[0]===sortBy)||COLS[1];
   const rows=filtered().sort((a,b)=>{const x=col[3](a),y=col[3](b);return (x>y?1:x<y?-1:0)*sortDir});
-  $("tb").innerHTML=rows.map(b=>`<tr class="b" onclick="abrir('${b.nombre}')">${COLS.map(c=>`<td>${c[2](b)}</td>`).join("")}</tr>`).join("")||'<tr><td colspan="9">Sin resultados</td></tr>';
-  kpis(rows);carga();alertas();
+  $("tb").innerHTML=rows.map(b=>`<tr class="b" onclick="abrir('${b.nombre}')">${COLS.map(c=>`<td>${c[2](b)}</td>`).join("")}</tr>`).join("")||'<tr><td colspan="12">Sin resultados</td></tr>';
+  kpis(rows);carga();reqs();alertas();
 }
 function kpis(rows){
   const sum=k=>BASE.reduce((s,b)=>s+(+get(b,k)||0),0);
   const e=s=>BASE.filter(b=>estado(b)===s).length;
   $("kpis").innerHTML=[
    [BASE.length,"Edificios administrados"],
-   [BASE.reduce((s,b)=>s+(b.aptos||0),0),"Apartamentos (sin 72 HUB / ALMA 72)"],
+   [BASE.reduce((s,b)=>s+(b.aptos||0),0),"Apartamentos "],
    [fmt(sum("cartera")),"Cartera en mora total"],
    [fmt(sum("flujo")),"Saldo de caja total"],
    [sum("juridico"),"Procesos jurídicos abiertos"],
    [`${e("rojo")} / ${e("amarillo")} / ${e("verde")}`,"Rojo / Amarillo / Verde"],
-   [e("sin dato"),"Edificios sin datos cargados"]
+   [INVT.pct+"%","Completitud documental global"],
+   [INVT.falta,"Documentos que faltan"],
+   [INVT.venc,"Documentos vencidos"],
+   [Object.values(INV).filter(v=>v[6]==="Alta").length,"Edificios con prioridad Alta"]
   ].map(k=>`<div class="kpi"><b>${k[0]}</b><span>${k[1]}</span></div>`).join("");
+}
+function reqs(){
+  $("req").innerHTML=REQ.map(r=>`<div class="bar"><em style="min-width:260px">${r[0]}</em><i style="width:${r[5]*0.5}%;background:${r[5]>=80?'var(--bad)':'var(--warn)'}"></i><span>${r[5]}% · faltan ${r[4]}, vencidos ${r[3]}</span></div>`).join("");
 }
 function carga(){
   const m={};BASE.forEach(b=>{const r=b.resp;m[r]=m[r]||{e:0,a:0};m[r].e++;m[r].a+=b.aptos||0});
@@ -180,15 +201,17 @@ function alertas(){
     [["consejo","Consejo / asamblea"],["vence","Vencimiento"]].forEach(([k,t])=>{
       const d=dias(get(b,k));if(d!=null&&d<=14)out.push([d<0?-1:1,b,`${t}: ${d<0?"vencido hace "+(-d)+" d":d===0?"hoy":"en "+d+" d"}`]);
     });
+    if(inv(b)&&inv(b)[3]>0)out.push([2,b,`${inv(b)[3]} documento(s) vencido(s)`]);
     if(+get(b,"juridico")>0)out.push([2,b,`${get(b,"juridico")} proceso(s) jurídico(s)`]);
   });
   out.sort((a,b)=>a[0]-b[0]);
-  $("alertas").innerHTML=out.slice(0,12).map(a=>`<div class="alert" onclick="abrir('${a[1].nombre}')"><b>${a[1].nombre}</b> — ${a[2]}</div>`).join("")||'<span style="color:var(--mut)">Sin alertas. Carga fechas y estados en las fichas.</span>';
+  $("alertas").innerHTML=out.slice(0,15).map(a=>`<div class="alert" onclick="abrir('${a[1].nombre}')"><b>${a[1].nombre}</b> — ${a[2]}</div>`).join("")||'<span style="color:var(--mut)">Sin alertas. Carga fechas y estados en las fichas.</span>';
 }
 function abrir(n){
   const b=BASE.find(x=>x.nombre===n),d=EXTRA[n]||{};
   $("drawer").innerHTML=`<button class="x" onclick="cerrar()">×</button><h3>${b.nombre}</h3>
   <div class="meta">NIT ${b.nit||"—"} · ${b.dir||"—"}<br>${b.aptos??"—"} aptos · Portería ${b.porteria||"—"}<br>Responsable: ${b.resp} · Apoyo contable: ${b.apoyo}</div>
+  ${inv(b)?`<div class="meta"><b>Documentación:</b> ${inv(b)[5]}% completa · prioridad ${inv(b)[6]}<br>Completos ${inv(b)[1]} · Parciales ${inv(b)[2]} · Vencidos ${inv(b)[3]} · Faltan ${inv(b)[4]} · ${inv(b)[0]} archivos revisados</div>`:""}
   <div class="links"><b>OneDrive:</b><br>${SECCIONES.map(s=>`<a target="_blank" href="${ONEDRIVE}${encodeURIComponent(b.nombre)}/${encodeURIComponent(s)}">${s.slice(0,2)} ${s.slice(5)}</a>`).join("")}</div>
   ${FIELDS.map(([k,l,t,o])=>`<label>${l}</label>`+(t==="sel"?`<select data-k="${k}">${o.map(x=>`<option ${((d[k]||"sin dato")===x)?"selected":""}>${x}</option>`).join("")}</select>`
     :t==="txt"?`<textarea data-k="${k}">${d[k]||""}</textarea>`
