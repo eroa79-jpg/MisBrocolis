@@ -5,82 +5,197 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Súper Tablero · RR SERVIPH</title>
 <style>
-:root{--bg:#f5f6f8;--card:#fff;--ink:#1c2430;--mut:#6b7686;--line:#e3e7ee;--acc:#1f5eff;--ok:#1e9e5a;--warn:#e6a100;--bad:#d64545}
+:root{
+  --bg:#f3f5f9;--surface:#fff;--surface2:#f7f9fc;--ink:#0f1b2d;--mut:#64748b;--line:#e4e9f1;
+  --brand:#1d4ed8;--brand2:#0ea5e9;--shadow:0 1px 2px #0f1b2d0d,0 6px 20px #0f1b2d0a;
+  --ok:#16a34a;--par:#f59e0b;--ven:#dc2626;--fal:#94a3b8;--hdr:#0b1630;
+}
+[data-theme=dark]{
+  --bg:#0a1020;--surface:#121a2e;--surface2:#18223a;--ink:#e8eefb;--mut:#8fa0bd;--line:#243049;
+  --brand:#5b8cff;--brand2:#38bdf8;--shadow:0 1px 2px #0006,0 6px 20px #0004;--hdr:#070c19;
+  --ok:#34d399;--par:#fbbf24;--ven:#f87171;--fal:#64748b;
+}
 *{box-sizing:border-box}
-body{margin:0;font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink)}
-header{background:#0f1b33;color:#fff;padding:14px 24px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
-header h1{font-size:18px;margin:0;flex:1}
-header button,.btn{background:#2a3a5c;color:#fff;border:0;border-radius:6px;padding:7px 12px;cursor:pointer;font:inherit}
-header button:hover,.btn:hover{background:#3a4f7c}
-main{padding:20px 24px;max-width:1400px;margin:auto}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px}
-.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
-.kpi b{display:block;font-size:24px}
-.kpi span{color:var(--mut);font-size:12px}
-.row{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:18px}
-@media(max-width:900px){.row{grid-template-columns:1fr}}
-.panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
-.panel h2{font-size:14px;margin:0 0 10px}
-.bar{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:13px}
-.bar i{display:block;height:10px;border-radius:5px;background:var(--acc)}
-.bar em{font-style:normal;color:var(--mut);min-width:60px}
-.alert{padding:6px 0;border-bottom:1px solid var(--line);font-size:13px;cursor:pointer}
-.alert:last-child{border:0}
-.tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
-.tools input,.tools select{padding:7px 10px;border:1px solid var(--line);border-radius:6px;font:inherit;background:#fff}
-.tools input{flex:1;min-width:200px}
-table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
-th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
-th{background:#eef1f6;font-size:12px;color:var(--mut);cursor:pointer;user-select:none}
-tr.b:hover{background:#f0f5ff;cursor:pointer}
-.dot{display:inline-block;width:11px;height:11px;border-radius:50%;background:#c5ccd8}
-.dot.verde{background:var(--ok)}.dot.amarillo{background:var(--warn)}.dot.rojo{background:var(--bad)}
-.wrap{overflow-x:auto}
-#drawer{position:fixed;top:0;right:-480px;width:460px;max-width:100%;height:100%;background:#fff;box-shadow:-4px 0 20px #0003;transition:right .2s;padding:20px;overflow:auto;z-index:5}
+html{scroll-behavior:smooth}
+body{margin:0;font:14px/1.45 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);transition:background .25s,color .25s}
+button{font:inherit;cursor:pointer}
+/* Header */
+header{position:sticky;top:0;z-index:20;background:var(--hdr);color:#fff;box-shadow:0 2px 14px #0005}
+.hd{max-width:1480px;margin:auto;padding:12px 24px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:12px}
+.mono{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--brand2));display:grid;place-items:center;font-weight:800;letter-spacing:-.5px}
+.logo b{display:block;font-size:16px;line-height:1.1}.logo small{color:#9fb0d0;font-size:11px}
+nav{display:flex;gap:4px;margin-left:12px;flex:1}
+nav button{background:none;border:0;color:#aab9d8;padding:8px 14px;border-radius:8px;font-weight:600}
+nav button:hover{background:#ffffff14;color:#fff}
+nav button.on{background:#ffffff1f;color:#fff}
+.hr{display:flex;gap:8px;align-items:center}
+.ib{background:#ffffff14;border:0;color:#fff;border-radius:8px;padding:8px 11px}
+.ib:hover{background:#ffffff26}
+.fecha{color:#9fb0d0;font-size:12px;margin-right:6px}
+main{max-width:1480px;margin:auto;padding:22px 24px 40px}
+.view{display:none;animation:in .35s ease}
+.view.on{display:block}
+@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+h2.t{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);margin:0 0 12px}
+/* Cards */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:18px}
+.grid{display:grid;gap:14px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin-bottom:14px}
+.kpi{position:relative;overflow:hidden;cursor:default}
+.kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c,var(--brand))}
+.kpi span{color:var(--mut);font-size:12px;font-weight:600}
+.kpi b{display:block;font-size:30px;letter-spacing:-.5px;margin:2px 0}
+.kpi small{color:var(--mut)}
+.g2{grid-template-columns:1.2fr 1fr}.g3{grid-template-columns:1fr 1fr 1fr}
+@media(max-width:1000px){.g2,.g3{grid-template-columns:1fr}}
+/* Donut */
+.donut{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.donut svg{flex:none}
+.leg div{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:13px}
+.sw{width:10px;height:10px;border-radius:3px;display:inline-block}
+.leg b{margin-left:auto;padding-left:18px}
+/* Bars */
+.rk{display:grid;grid-template-columns:150px 1fr 48px;gap:10px;align-items:center;margin:6px 0;font-size:13px;cursor:pointer;border-radius:8px;padding:2px 6px}
+.rk:hover{background:var(--surface2)}
+.rk .n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trk{height:12px;background:var(--surface2);border-radius:6px;overflow:hidden;display:flex}
+.trk i{display:block;height:100%;width:0;transition:width .9s cubic-bezier(.2,.8,.2,1)}
+.rk em{font-style:normal;text-align:right;font-weight:700}
+.stk{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--surface2);min-width:120px}
+.stk i{display:block;height:100%}
+/* Alerts */
+.al{display:flex;gap:10px;padding:9px 6px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:8px;align-items:flex-start}
+.al:hover{background:var(--surface2)}.al:last-child{border:0}
+.al .ic{width:8px;height:8px;border-radius:50%;margin-top:6px;flex:none}
+.al small{color:var(--mut);display:block}
+/* Tools */
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.tools input,.tools select{padding:9px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;background:var(--surface);color:var(--ink)}
+.tools input{flex:1;min-width:220px}
+.chips{display:flex;gap:6px}
+.chip{border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:7px 12px;border-radius:999px;font-weight:600;font-size:12px}
+.chip.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.count{color:var(--mut);font-size:12px;margin-left:auto}
+/* Table */
+.wrap{overflow:auto;border-radius:14px;border:1px solid var(--line);box-shadow:var(--shadow);background:var(--surface)}
+table{width:100%;border-collapse:collapse}
+th,td{padding:11px 12px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+th{position:sticky;top:0;background:var(--surface2);font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);cursor:pointer;user-select:none}
+th.s::after{content:attr(data-d)}
+tr.b{cursor:pointer;transition:background .12s}
+tr.b:hover{background:var(--surface2)}
+td small{display:block;color:var(--mut);font-size:11px}
+.dot{display:inline-block;width:11px;height:11px;border-radius:50%;background:var(--fal)}
+.dot.verde{background:var(--ok)}.dot.amarillo{background:var(--par)}.dot.rojo{background:var(--ven)}
+.pill{padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700}
+.pill.Alta{background:#dc262620;color:var(--ven)}.pill.Media{background:#f59e0b24;color:var(--par)}.pill.Baja{background:#16a34a20;color:var(--ok)}
+.pct{display:flex;align-items:center;gap:8px}.pct .stk{width:110px}.pct b{min-width:34px}
+/* Team cards */
+.team{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.team h3{margin:0 0 2px;font-size:16px}.team .sub{color:var(--mut);font-size:12px;margin-bottom:12px}
+.mini{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.mini div{background:var(--surface2);border-radius:10px;padding:8px 10px}
+.mini b{display:block;font-size:18px}.mini span{font-size:11px;color:var(--mut)}
+.av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;display:inline-grid;place-items:center;font-weight:700;margin-right:10px;vertical-align:middle}
+/* Docs matrix rows */
+.dr{display:grid;grid-template-columns:minmax(220px,300px) 1fr 140px;gap:12px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px}
+.dr:last-child{border:0}.dr .stk{height:14px}
+@media(max-width:700px){.dr{grid-template-columns:1fr}.rk{grid-template-columns:110px 1fr 44px}}
+/* Drawer */
+#ov{position:fixed;inset:0;background:#0008;opacity:0;pointer-events:none;transition:.2s;z-index:30}
+#ov.on{opacity:1;pointer-events:auto}
+#drawer{position:fixed;top:0;right:-520px;width:500px;max-width:100%;height:100%;background:var(--surface);box-shadow:-8px 0 30px #0005;transition:right .25s cubic-bezier(.2,.8,.2,1);padding:24px;overflow:auto;z-index:31}
 #drawer.open{right:0}
-#drawer h3{margin:0 0 4px}
-#drawer label{display:block;margin:10px 0 3px;font-size:12px;color:var(--mut)}
-#drawer input,#drawer select,#drawer textarea{width:100%;padding:7px;border:1px solid var(--line);border-radius:6px;font:inherit}
-#drawer textarea{min-height:80px}
-.meta{color:var(--mut);font-size:13px;margin-bottom:6px}
-.x{float:right;background:none;border:0;font-size:22px;cursor:pointer}
-.links a{display:inline-block;margin:3px 6px 0 0;font-size:12px;color:var(--acc)}
-footer{color:var(--mut);font-size:12px;padding:20px 24px;text-align:center}
+#drawer h3{margin:0;font-size:22px}
+.x{float:right;background:var(--surface2);border:0;border-radius:8px;width:34px;height:34px;font-size:20px;color:var(--ink)}
+.meta{color:var(--mut);font-size:13px;margin:6px 0 14px}
+.sec{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);margin:20px 0 8px}
+#drawer label{display:block;margin:10px 0 4px;font-size:12px;color:var(--mut);font-weight:600}
+#drawer input,#drawer select,#drawer textarea{width:100%;padding:9px;border:1px solid var(--line);border-radius:10px;font:inherit;background:var(--surface);color:var(--ink)}
+#drawer textarea{min-height:90px}
+.links{display:flex;flex-wrap:wrap;gap:6px}
+.links a{font-size:12px;color:var(--brand);background:var(--surface2);padding:5px 10px;border-radius:8px;text-decoration:none;font-weight:600}
+.links a:hover{background:var(--brand);color:#fff}
+.btn{background:var(--brand);color:#fff;border:0;border-radius:10px;padding:10px 18px;font-weight:700;margin-top:16px}
+.btn:hover{filter:brightness(1.1)}
+#tip{position:fixed;pointer-events:none;background:#0b1630;color:#fff;padding:6px 10px;border-radius:8px;font-size:12px;z-index:50;opacity:0;transition:opacity .1s;max-width:260px;box-shadow:0 4px 14px #0006}
+footer{color:var(--mut);font-size:12px;padding:10px 24px 30px;text-align:center}
 </style>
 </head>
 <body>
-<header>
-  <h1>Súper Tablero · RR SERVIPH SAS</h1>
-  <button onclick="exportar()">Exportar datos</button>
-  <button onclick="document.getElementById('imp').click()">Importar</button>
-  <input id="imp" type="file" accept=".json" hidden onchange="importar(this)">
-</header>
-<main>
-  <div class="kpis" id="kpis"></div>
-  <div class="row">
-    <div class="panel"><h2>Carga por responsable (edificios · apartamentos)</h2><div id="carga"></div></div>
-    <div class="panel"><h2>Alertas</h2><div id="alertas"></div></div>
+<header><div class="hd">
+  <div class="logo"><div class="mono">RR</div><div><b>Súper Tablero</b><small>RR SERVIPH SAS · Administración de propiedad horizontal</small></div></div>
+  <nav id="nav">
+    <button data-v="resumen" class="on">Resumen</button>
+    <button data-v="edificios">Edificios</button>
+    <button data-v="documentos">Documentos</button>
+    <button data-v="equipo">Equipo</button>
+  </nav>
+  <div class="hr">
+    <span class="fecha" id="fecha"></span>
+    <button class="ib" id="th" title="Cambiar tema">Tema</button>
+    <button class="ib" onclick="exportar()">Exportar</button>
+    <button class="ib" onclick="document.getElementById('imp').click()">Importar</button>
+    <input id="imp" type="file" accept=".json" hidden onchange="importar(this)">
   </div>
-  <div class="panel" style="margin-bottom:18px"><h2>Documentos que más faltan (% de edificios sin el documento)</h2><div id="req"></div></div>
-  <div class="tools">
-    <input id="q" placeholder="Buscar edificio, NIT o dirección…" oninput="render()">
-    <select id="fr" onchange="render()"></select>
-    <select id="fa" onchange="render()"></select>
-    <select id="fs" onchange="render()">
-      <option value="">Todos los estados</option><option>rojo</option><option>amarillo</option><option>verde</option><option>sin dato</option>
-    </select>
-  </div>
-  <div class="wrap"><table>
-    <thead><tr id="th"></tr></thead><tbody id="tb"></tbody>
-  </table></div>
-</main>
-<footer>Datos base: <i>INF EDIFICIOS.xlsx</i> e <i>Inventario_Informacion_Faltante_Copropiedades.xlsx</i> (OneDrive, corte 23-oct-2026). Los campos financieros y jurídicos se editan en cada ficha y se guardan en este navegador; usa Exportar para respaldarlos.</footer>
+</div></header>
 
+<main>
+<!-- RESUMEN -->
+<section class="view on" id="v-resumen">
+  <div class="grid kpis" id="kpis"></div>
+  <div class="grid g2" style="margin-bottom:14px">
+    <div class="card"><h2 class="t">Estado de la documentación (todos los edificios)</h2><div id="donut"></div></div>
+    <div class="card"><h2 class="t">Alertas y prioridades</h2><div id="alertas"></div></div>
+  </div>
+  <div class="grid g2">
+    <div class="card"><h2 class="t">Completitud por edificio · clic para abrir la ficha</h2><div id="rank"></div></div>
+    <div class="card"><h2 class="t">Documentos que más faltan</h2><div id="topreq"></div></div>
+  </div>
+</section>
+
+<!-- EDIFICIOS -->
+<section class="view" id="v-edificios">
+  <div class="tools">
+    <input id="q" placeholder="Buscar edificio, NIT o dirección…" oninput="renderTabla()">
+    <div class="chips" id="chips"></div>
+    <select id="fr" onchange="renderTabla()"></select>
+    <select id="fa" onchange="renderTabla()"></select>
+    <span class="count" id="cnt"></span>
+  </div>
+  <div class="wrap"><table><thead><tr id="thead"></tr></thead><tbody id="tb"></tbody></table></div>
+</section>
+
+<!-- DOCUMENTOS -->
+<section class="view" id="v-documentos">
+  <div class="card">
+    <h2 class="t">Estado por requisito documental (23 copropiedades)</h2>
+    <div class="leg" style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:10px" id="leg2"></div>
+    <div id="reqs"></div>
+  </div>
+</section>
+
+<!-- EQUIPO -->
+<section class="view" id="v-equipo">
+  <div class="grid g2" style="margin-bottom:14px">
+    <div class="card"><h2 class="t">Responsables · apartamentos a cargo</h2><div id="loadR"></div></div>
+    <div class="card"><h2 class="t">Apoyo contable · apartamentos a cargo</h2><div id="loadA"></div></div>
+  </div>
+  <h2 class="t">Detalle por responsable</h2>
+  <div class="grid team" id="team"></div>
+</section>
+</main>
+<footer>Fuentes: INF EDIFICIOS.xlsx e Inventario_Informacion_Faltante_Copropiedades.xlsx (OneDrive, corte 23-oct-2026). Cartera, caja, procesos jurídicos y fechas se capturan en cada ficha y se guardan en este navegador.</footer>
+
+<div id="ov" onclick="cerrar()"></div>
 <aside id="drawer"></aside>
+<div id="tip"></div>
 
 <script>
-// ---- Datos base (fuente: INF EDIFICIOS.xlsx). Sin claves ni wifi. ----
+// ================= DATOS =================
 const BASE=[
+["72 HUB","","",904,"","—","—",""],["ALMA 72","","",null,"","—","—",""],
 ["ALBEROBELLO","900154519-6","Carrera 16 #86A-65",10,"3053395843","Liliana B","Halisson","A"],
 ["AMERICANO","800162359-5","Carrera 13 #38-76",102,"2856292","Josmary Veliz","Halisson","A/E"],
 ["BASIKA 71","900616402-7","Calle 71 #3-07",29,"3176490940","Liliana B","Leydi","E"],
@@ -88,6 +203,7 @@ const BASE=[
 ["CALABRIA VIRREY","900600372-4","Carrera 19 #85-38",24,"3118413817","Andres R","Leydi","E"],
 ["CANVAS","901569378-1","Carrera 11 No 93A-38",32,"3164601531","Andres R","Leydi","A"],
 ["COUNTRY VIRREY PH","900207480-7","Cra 19b No 85-75",11,"3150686716","Liliana B","Halisson","E"],
+["EDIFICIO DC","901472732-6","Carrera 19b #85-71",23,"","—","—",""],
 ["EGOBOX M35","900390128-0","Carrera 19 #86a-78",11,"2181870","Josmary Veliz","Adriana","E"],
 ["ESPACIO 86 PH","900186436-0","Calle 86 No 18-24",13,"3160531948","Liliana B","Halisson","R"],
 ["KUBIK 4","901473130-7","Calle 86A 19B26 – Cra 19A #86A-16",50,"3152533551","Andres R","Leydi","R"],
@@ -98,141 +214,189 @@ const BASE=[
 ["RINCON DE LA CABRERA","830138423-7","Carrera 9 #89-40",8,"3228233305","Josmary Veliz","Halisson","E"],
 ["RIONIMA 1","900091047-1","Carrera 21 No 106b-62",12,"","Josmary Veliz","Halisson","E"],
 ["SOLAR DEL VIRREY","900535043-8","Carrera 16 #85-47",25,"3154874099","Andres R","Halisson","A"],
-["TRUANDO","830001881-8","Cra 18 No 85-90/94",26,"3007754328","Josmary Veliz","Leydi","E"],
-["TRIBECA94","901889430-8","Calle 87 No 19c 41",112,"3178586610","Andres R","Halisson","R"],
 ["TIVOLI","830022428-4","Calle 95 16-23",12,"3153031757","—","—","R"],
-["EDIFICIO DC","901472732-6","Carrera 19b #85-71",23,"","—","—",""]
+["TRIBECA94","901889430-8","Calle 87 No 19c 41",112,"3178586610","Andres R","Halisson","R"],
+["TRUANDO","830001881-8","Cra 18 No 85-90/94",26,"3007754328","Josmary Veliz","Leydi","E"],
+["UNIQUE MINE","","",223,"","—","—",""]
 ].map(r=>({nombre:r[0],nit:r[1],dir:r[2],aptos:r[3],porteria:r[4],resp:r[5],apoyo:r[6],grupo:r[7]}));
-// 72 HUB, ALMA 72 y UNIQUE MINE existen en OneDrive pero no están en INF EDIFICIOS.xlsx; se agregan aquí.
-BASE.push({nombre:"UNIQUE MINE",nit:"",dir:"",aptos:223,porteria:"",resp:"—",apoyo:"—",grupo:""});
-BASE.unshift({nombre:"72 HUB",nit:"",dir:"",aptos:904,porteria:"",resp:"—",apoyo:"—",grupo:""},
-             {nombre:"ALMA 72",nit:"",dir:"",aptos:null,porteria:"",resp:"—",apoyo:"—",grupo:""});
 
-
-// ---- Inventario de información faltante (Inventario_Informacion_Faltante_Copropiedades.xlsx, corte 23-oct-2026) ----
-// [archivos, completo, parcial, vencido, falta, % completitud, prioridad]
+// [archivos, completo, parcial, vencido, falta, %, prioridad]  (Inventario_Informacion_Faltante, 23-oct-2026)
 const INV={"72 HUB":[1363,4,10,0,5,47,"Media"],"ALBEROBELLO":[15,4,4,0,10,33,"Alta"],"AMERICANO":[16,4,4,1,9,33,"Alta"],"BASIKA 71":[26,3,2,4,9,22,"Alta"],"CABRERA 85 12":[174,3,8,2,6,37,"Media"],"CALABRIA VIRREY":[25,4,3,2,9,31,"Alta"],"CANVAS":[94,4,5,2,7,36,"Media"],"COUNTRY VIRREY PH":[45,7,3,2,6,47,"Media"],"EDIFICIO DC":[1493,6,9,2,1,58,"Media"],"EGOBOX M35":[2048,1,7,1,9,25,"Alta"],"ESPACIO 86 PH":[47,4,3,1,10,31,"Alta"],"KUBIK 4":[39,3,4,2,9,28,"Alta"],"NEXT LIVING 57":[32,4,3,2,10,29,"Alta"],"PORTAL II":[12,4,2,0,12,28,"Alta"],"PRADOS DEL COUNTRY":[49,4,7,1,6,42,"Media"],"PROA":[37,4,3,2,9,31,"Alta"],"RINCON DE LA CABRERA":[90,3,2,1,12,22,"Alta"],"RIONIMA 1":[11,3,3,0,12,25,"Alta"],"SOLAR DEL VIRREY":[21,4,4,1,9,33,"Alta"],"TIVOLI":[30,5,4,0,9,39,"Media"],"TRIBECA94":[19,1,5,0,12,19,"Alta"],"TRUANDO":[50,2,4,2,10,22,"Alta"],"UNIQUE MINE":[204,5,11,0,3,55,"Media"]};
-// Requisito, completo, parcial, vencido, falta, % de edificios sin el documento
-const REQ=[["Historia clínica SG-SST de la copropiedad",0,1,0,22,96],["Certificado de existencia y representación vigente",3,0,14,6,87],["Reglamento de PH (escritura y reformas)",2,2,0,19,83],["Contrato de administración firmado",0,4,0,19,83],["Acta de asamblea 2026 firmada",1,3,0,19,83],["Actas de consejo",2,3,0,18,78],["Mantenimientos y certificaciones",0,5,2,16,78],["Libro de copropietarios / residentes",0,5,0,18,78],["Manual de convivencia vigente",4,2,1,16,74],["Certificación bancaria",0,9,0,14,61]];
-REQ[0][0]="SG-SST de la copropiedad";
-const inv=b=>INV[b.nombre];
-const INVT=(()=>{const v=Object.values(INV),S=i=>v.reduce((a,x)=>a+x[i],0),c=S(1),p=S(2),ve=S(3),f=S(4);return{falta:f,venc:ve,pct:Math.round((c+p/2)/(c+p+ve+f)*100)}})();
+// requisito, completo, parcial, vencido, falta
+const REQ=[["Reglamento de PH (escritura y reformas)",2,2,0,19],["Certificado de existencia y representación legal",3,0,14,6],["RUT de la copropiedad actualizado",10,2,9,2],["Contrato de administración firmado",0,4,0,19],["Acta de asamblea 2026 firmada",1,3,0,19],["Actas de consejo",2,3,0,18],["Manual de convivencia vigente",4,2,1,16],["Presupuesto 2026 aprobado",9,13,0,1],["EEFF cierre 2025",17,4,0,2],["Cartera por edades",19,0,0,4],["Certificación bancaria",0,9,0,14],["Póliza de zonas comunes vigente",14,0,2,7],["Contratos con proveedores",0,13,0,10],["Mantenimientos y certificaciones",0,5,2,16],["SG-SST de la copropiedad",0,1,0,22],["Base de unidades y coeficientes",5,18,0,0],["Libro de copropietarios / residentes",0,5,0,18],["Contactos operativos",0,23,0,0],["Registro de huéspedes y RNT",0,3,0,1]];
 
+const COL={ok:"var(--ok)",par:"var(--par)",ven:"var(--ven)",fal:"var(--fal)"};
 const FIELDS=[
  ["estado","Estado general","sel",["sin dato","verde","amarillo","rojo"]],
- ["cartera","Cartera en mora (COP)","num"],
- ["flujo","Saldo de caja (COP)","num"],
+ ["cartera","Cartera en mora (COP)","num"],["flujo","Saldo de caja (COP)","num"],
  ["juridico","Procesos jurídicos abiertos","num"],
  ["consejo","Próximo consejo / asamblea","date"],
  ["vence","Próximo vencimiento (contrato, póliza, DIAN)","date"],
  ["pendientes","Pendientes / notas","txt"]
 ];
+const SECCIONES=["00 — Identificación y ficha maestra","01 — Gobierno y representación","02 — Asambleas y consejos","03 — Finanzas y cartera","04 — Contratos y proveedores","05 — Jurídico y peticiones","06 — Operación y mantenimiento","07 — Proyectos y obras","08 — Comunicaciones","09 — Seguimiento"];
+const ONEDRIVE="https://rrserviph-my.sharepoint.com/personal/gerencia_rrserviph_com/Documents/01.%20EDIFICIOS/";
+
+// ================= UTILIDADES =================
 const KEY="rr-tablero-v1";
 let EXTRA=JSON.parse(localStorage.getItem(KEY)||"{}");
-let sortBy="nombre",sortDir=1;
-const ONEDRIVE="https://rrserviph-my.sharepoint.com/personal/gerencia_rrserviph_com/Documents/01.%20EDIFICIOS/";
-const SECCIONES=["00 — Identificación y ficha maestra","01 — Gobierno y representación","02 — Asambleas y consejos","03 — Finanzas y cartera","04 — Contratos y proveedores","05 — Jurídico y peticiones","06 — Operación y mantenimiento","07 — Proyectos y obras","08 — Comunicaciones","09 — Seguimiento"];
-
+let sortBy="nombre",sortDir=1,chip="";
 const $=id=>document.getElementById(id);
-const fmt=n=>n==null||n===""?"—":new Intl.NumberFormat("es-CO",{style:"currency",currency:"COP",maximumFractionDigits:0}).format(n);
 const get=(b,k)=>(EXTRA[b.nombre]||{})[k];
+const inv=b=>INV[b.nombre];
 const estado=b=>get(b,"estado")||"sin dato";
 const save=()=>localStorage.setItem(KEY,JSON.stringify(EXTRA));
+const cop=n=>n==null||n===""?"—":new Intl.NumberFormat("es-CO",{style:"currency",currency:"COP",maximumFractionDigits:0}).format(n);
+const num=n=>new Intl.NumberFormat("es-CO").format(n);
 const dias=d=>d?Math.ceil((new Date(d)-new Date(new Date().toDateString()))/864e5):null;
+const pcol=p=>p<35?"var(--ven)":p<60?"var(--par)":"var(--ok)";
+const esc=s=>String(s).replace(/'/g,"\\'");
+function stack(a,w){const t=a[0]+a[1]+a[2]+a[3]||1;return `<div class="stk" ${w?`style="width:${w}"`:""}>${["ok","par","ven","fal"].map((c,i)=>`<i style="width:${a[i]/t*100}%;background:${COL[c]}" data-tip="${["Completos","Parciales","Vencidos","Faltan"][i]}: ${a[i]}"></i>`).join("")}</div>`}
+function donut(vals,cols,center,sub,size=170){
+  const t=vals.reduce((a,b)=>a+b,0)||1,r=size/2-14,C=2*Math.PI*r;let off=0;
+  const segs=vals.map((v,i)=>{const l=v/t*C,s=`<circle r="${r}" cx="${size/2}" cy="${size/2}" fill="none" stroke="${cols[i]}" stroke-width="22" stroke-dasharray="0 ${C}" stroke-dashoffset="${-off}" transform="rotate(-90 ${size/2} ${size/2})" data-l="${l}" data-c="${C}"><title>${v}</title></circle>`;off+=l;return s}).join("");
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle r="${r}" cx="${size/2}" cy="${size/2}" fill="none" stroke="var(--surface2)" stroke-width="22"/>${segs}<text x="50%" y="48%" text-anchor="middle" font-size="26" font-weight="800" fill="var(--ink)">${center}</text><text x="50%" y="62%" text-anchor="middle" font-size="11" fill="var(--mut)">${sub}</text></svg>`;
+}
+function animar(root){
+  root.querySelectorAll("circle[data-l]").forEach(c=>{const l=+c.dataset.l,C=+c.dataset.c;c.style.transition="stroke-dasharray .9s cubic-bezier(.2,.8,.2,1)";requestAnimationFrame(()=>requestAnimationFrame(()=>c.setAttribute("stroke-dasharray",`${Math.max(l-1.5,0)} ${C}`)))});
+  root.querySelectorAll("[data-w]").forEach(e=>requestAnimationFrame(()=>requestAnimationFrame(()=>e.style.width=e.dataset.w)));
+  root.querySelectorAll("[data-n]").forEach(e=>{const to=+e.dataset.n,f=e.dataset.f,t0=performance.now();(function s(t){const k=Math.min((t-t0)/900,1),v=to*(1-Math.pow(1-k,3));e.textContent=(f==="cop"?cop(Math.round(v)):f==="pct"?Math.round(v)+"%":num(Math.round(v)));if(k<1)requestAnimationFrame(s)})(t0)});
+}
+// Tooltip
+const tip=$("tip");
+document.addEventListener("mousemove",e=>{const t=e.target.closest("[data-tip]");if(t){tip.textContent=t.dataset.tip;tip.style.opacity=1;tip.style.left=Math.min(e.clientX+14,innerWidth-270)+"px";tip.style.top=e.clientY+14+"px"}else tip.style.opacity=0});
 
-function uniq(k){return [...new Set(BASE.map(b=>b[k]).filter(x=>x&&x!=="—"))].sort()}
-function initFilters(){
-  $("fr").innerHTML='<option value="">Todos los responsables</option>'+uniq("resp").map(x=>`<option>${x}</option>`).join("");
-  $("fa").innerHTML='<option value="">Todo apoyo contable</option>'+uniq("apoyo").map(x=>`<option>${x}</option>`).join("");
+// ================= TOTALES =================
+function totales(){
+  const v=Object.values(INV),S=i=>v.reduce((a,x)=>a+x[i],0);
+  const c=S(1),p=S(2),ve=S(3),f=S(4);
+  return{c,p,ve,f,pct:Math.round((c+p/2)/(c+p+ve+f)*100),alta:v.filter(x=>x[6]==="Alta").length,arch:S(0)};
 }
-function filtered(){
-  const q=$("q").value.toLowerCase(),fr=$("fr").value,fa=$("fa").value,fs=$("fs").value;
-  return BASE.filter(b=>(!q||(b.nombre+b.nit+b.dir).toLowerCase().includes(q))&&(!fr||b.resp===fr)&&(!fa||b.apoyo===fa)&&(!fs||estado(b)===fs));
-}
-const COLS=[
- ["estado","",b=>`<span class="dot ${estado(b).replace(" ","")==="sindato"?"":estado(b)}"></span>`,b=>estado(b)],
- ["nombre","Edificio",b=>"<b>"+b.nombre+"</b>",b=>b.nombre],
- ["aptos","Aptos",b=>b.aptos??"—",b=>b.aptos||0],
- ["resp","Responsable",b=>b.resp,b=>b.resp],
- ["apoyo","Apoyo contable",b=>b.apoyo,b=>b.apoyo],
- ["cartera","Cartera en mora",b=>fmt(get(b,"cartera")),b=>+get(b,"cartera")||0],
- ["flujo","Saldo de caja",b=>fmt(get(b,"flujo")),b=>+get(b,"flujo")||0],
- ["juridico","Jurídicos",b=>get(b,"juridico")||"—",b=>+get(b,"juridico")||0],
- ["docs","Docs %",b=>inv(b)?`<b style="color:${inv(b)[5]<35?'var(--bad)':inv(b)[5]<60?'var(--warn)':'var(--ok)'}">${inv(b)[5]}%</b>`:"—",b=>inv(b)?inv(b)[5]:-1],
- ["falta","Faltan / vencidos",b=>inv(b)?`${inv(b)[4]} / ${inv(b)[3]}`:"—",b=>inv(b)?inv(b)[4]:-1],
- ["prio","Prioridad",b=>inv(b)?inv(b)[6]:"—",b=>inv(b)?inv(b)[6]:""],
- ["consejo","Próx. consejo",b=>get(b,"consejo")||"—",b=>get(b,"consejo")||"9999"]
-];
-function render(){
-  $("th").innerHTML=COLS.map(c=>`<th onclick="sortBy='${c[0]}';sortDir=sortBy==='${c[0]}'&&window._l==='${c[0]}'?-sortDir:1;window._l='${c[0]}';render()">${c[1]}</th>`).join("");
-  const col=COLS.find(c=>c[0]===sortBy)||COLS[1];
-  const rows=filtered().sort((a,b)=>{const x=col[3](a),y=col[3](b);return (x>y?1:x<y?-1:0)*sortDir});
-  $("tb").innerHTML=rows.map(b=>`<tr class="b" onclick="abrir('${b.nombre}')">${COLS.map(c=>`<td>${c[2](b)}</td>`).join("")}</tr>`).join("")||'<tr><td colspan="12">Sin resultados</td></tr>';
-  kpis(rows);carga();reqs();alertas();
-}
-function kpis(rows){
-  const sum=k=>BASE.reduce((s,b)=>s+(+get(b,k)||0),0);
-  const e=s=>BASE.filter(b=>estado(b)===s).length;
-  $("kpis").innerHTML=[
-   [BASE.length,"Edificios administrados"],
-   [BASE.reduce((s,b)=>s+(b.aptos||0),0),"Apartamentos "],
-   [fmt(sum("cartera")),"Cartera en mora total"],
-   [fmt(sum("flujo")),"Saldo de caja total"],
-   [sum("juridico"),"Procesos jurídicos abiertos"],
-   [`${e("rojo")} / ${e("amarillo")} / ${e("verde")}`,"Rojo / Amarillo / Verde"],
-   [INVT.pct+"%","Completitud documental global"],
-   [INVT.falta,"Documentos que faltan"],
-   [INVT.venc,"Documentos vencidos"],
-   [Object.values(INV).filter(v=>v[6]==="Alta").length,"Edificios con prioridad Alta"]
-  ].map(k=>`<div class="kpi"><b>${k[0]}</b><span>${k[1]}</span></div>`).join("");
-}
-function reqs(){
-  $("req").innerHTML=REQ.map(r=>`<div class="bar"><em style="min-width:260px">${r[0]}</em><i style="width:${r[5]*0.5}%;background:${r[5]>=80?'var(--bad)':'var(--warn)'}"></i><span>${r[5]}% · faltan ${r[4]}, vencidos ${r[3]}</span></div>`).join("");
-}
-function carga(){
-  const m={};BASE.forEach(b=>{const r=b.resp;m[r]=m[r]||{e:0,a:0};m[r].e++;m[r].a+=b.aptos||0});
-  const max=Math.max(...Object.values(m).map(x=>x.a))||1;
-  $("carga").innerHTML=Object.entries(m).sort((a,b)=>b[1].a-a[1].a).map(([r,v])=>`<div class="bar"><em style="min-width:110px">${r}</em><i style="width:${v.a/max*55}%"></i><span>${v.e} edif. · ${v.a} aptos</span></div>`).join("");
+const sum=k=>BASE.reduce((s,b)=>s+(+get(b,k)||0),0);
+
+// ================= RESUMEN =================
+function resumen(){
+  const T=totales(),apt=BASE.reduce((s,b)=>s+(b.aptos||0),0);
+    $("kpis").innerHTML=[
+   [BASE.length,"Edificios administrados",`${num(apt)} apartamentos`,"var(--brand)"],
+   [T.pct,"Completitud documental","pct",pcol(T.pct)],
+   [T.f,"Documentos que faltan",`${T.arch.toLocaleString("es-CO")} archivos revisados`,"var(--ven)"],
+   [T.ve,"Documentos vencidos","Requieren renovación","var(--par)"],
+   [T.alta,"Edificios prioridad Alta","completitud < 35 %","var(--ven)"],
+   [sum("cartera"),"Cartera en mora","captura manual en cada ficha","var(--brand2)","cop"]
+  ].map(k=>`<div class="card kpi" style="--c:${k[3]}"><span>${k[1]}</span><b data-n="${k[0]}" data-f="${k[4]||(k[2]==="pct"?"pct":"")}">0</b><small>${k[2]==="pct"?"corte 23-oct-2026":k[2]}</small></div>`).join("");
+  $("donut").innerHTML=`<div class="donut">${donut([T.c,T.p,T.ve,T.f],[COL.ok,COL.par,COL.ven,COL.fal],T.pct+"%","completo")}
+   <div class="leg" style="flex:1;min-width:200px">${[["Completos",T.c,"ok"],["Parciales",T.p,"par"],["Vencidos",T.ve,"ven"],["Faltan",T.f,"fal"]].map(x=>`<div><span class="sw" style="background:${COL[x[2]]}"></span>${x[0]}<b>${x[1]}</b></div>`).join("")}
+   <div style="color:var(--mut);font-size:12px;margin-top:10px">Completitud = (completos + ½ parciales) ÷ ítems aplicables.</div></div></div>`;
+  // Ranking
+  const rows=BASE.filter(inv).sort((a,b)=>inv(a)[5]-inv(b)[5]);
+  $("rank").innerHTML=rows.map(b=>{const p=inv(b)[5];return `<div class="rk" onclick="abrir('${esc(b.nombre)}')"><span class="n">${b.nombre}</span><div class="trk"><i data-w="${p}%" style="background:${pcol(p)}" data-tip="${b.nombre}: ${p}% · faltan ${inv(b)[4]}, vencidos ${inv(b)[3]}"></i></div><em>${p}%</em></div>`}).join("");
+  // Top requisitos
+  const top=[...REQ].map(r=>({n:r[0],f:r[4]+r[3],r})).sort((a,b)=>b.f-a.f).slice(0,8);
+  $("topreq").innerHTML=top.map(x=>`<div class="rk" style="grid-template-columns:200px 1fr 52px;cursor:default"><span class="n" title="${x.n}">${x.n}</span><div class="trk"><i data-w="${x.f/23*100}%" style="background:${x.f/23>.8?"var(--ven)":"var(--par)"}" data-tip="${x.r[4]} faltan · ${x.r[3]} vencidos · ${x.r[2]} parciales · ${x.r[1]} completos"></i></div><em>${x.f}/23</em></div>`).join("");
+  alertas();
+  animar($("v-resumen"));
 }
 function alertas(){
   const out=[];
   BASE.forEach(b=>{
-    if(estado(b)==="rojo")out.push([0,b,"Estado en rojo"]);
-    [["consejo","Consejo / asamblea"],["vence","Vencimiento"]].forEach(([k,t])=>{
-      const d=dias(get(b,k));if(d!=null&&d<=14)out.push([d<0?-1:1,b,`${t}: ${d<0?"vencido hace "+(-d)+" d":d===0?"hoy":"en "+d+" d"}`]);
-    });
-    if(inv(b)&&inv(b)[3]>0)out.push([2,b,`${inv(b)[3]} documento(s) vencido(s)`]);
-    if(+get(b,"juridico")>0)out.push([2,b,`${get(b,"juridico")} proceso(s) jurídico(s)`]);
+    const i=inv(b);
+    if(estado(b)==="rojo")out.push([0,b,"Estado general en rojo","var(--ven)"]);
+    [["consejo","Consejo / asamblea"],["vence","Vencimiento"]].forEach(([k,t])=>{const d=dias(get(b,k));if(d!=null&&d<=14)out.push([d<0?0:1,b,`${t}: ${d<0?"vencido hace "+(-d)+" d":d===0?"hoy":"en "+d+" d"}`,"var(--ven)"])});
+    if(+get(b,"juridico")>0)out.push([2,b,`${get(b,"juridico")} proceso(s) jurídico(s)`,"var(--par)"]);
+    if(i&&i[3]>=2)out.push([3,b,`${i[3]} documentos vencidos`,"var(--par)"]);
+    if(i&&i[6]==="Alta"&&i[5]<25)out.push([4,b,`Completitud crítica: ${i[5]}%`,"var(--ven)"]);
   });
-  out.sort((a,b)=>a[0]-b[0]);
-  $("alertas").innerHTML=out.slice(0,15).map(a=>`<div class="alert" onclick="abrir('${a[1].nombre}')"><b>${a[1].nombre}</b> — ${a[2]}</div>`).join("")||'<span style="color:var(--mut)">Sin alertas. Carga fechas y estados en las fichas.</span>';
+  out.sort((a,b)=>a[0]-b[0]||(inv(a[1])?inv(a[1])[5]:100)-(inv(b[1])?inv(b[1])[5]:100));
+  $("alertas").innerHTML=out.slice(0,9).map(a=>`<div class="al" onclick="abrir('${esc(a[1].nombre)}')"><span class="ic" style="background:${a[3]}"></span><div><b>${a[1].nombre}</b><small>${a[2]}</small></div></div>`).join("")+(out.length>9?`<div style="color:var(--mut);font-size:12px;padding:8px 6px">+ ${out.length-9} alertas más</div>`:"");
 }
+
+// ================= EDIFICIOS =================
+const COLS=[
+ ["estado","",b=>`<span class="dot ${estado(b)==="sin dato"?"":estado(b)}" data-tip="Estado: ${estado(b)}"></span>`,b=>estado(b)],
+ ["nombre","Edificio",b=>`<b>${b.nombre}</b><small>${b.dir||"—"}</small>`,b=>b.nombre],
+ ["aptos","Aptos",b=>b.aptos==null?"—":num(b.aptos),b=>b.aptos||0],
+ ["resp","Responsable",b=>b.resp,b=>b.resp],
+ ["apoyo","Apoyo contable",b=>b.apoyo,b=>b.apoyo],
+ ["docs","Documentación",b=>inv(b)?`<div class="pct">${stack(inv(b).slice(1,5),"110px")}<b style="color:${pcol(inv(b)[5])}">${inv(b)[5]}%</b></div>`:"—",b=>inv(b)?inv(b)[5]:-1],
+ ["falta","Faltan / venc.",b=>inv(b)?`${inv(b)[4]} / ${inv(b)[3]}`:"—",b=>inv(b)?inv(b)[4]:-1],
+ ["prio","Prioridad",b=>inv(b)?`<span class="pill ${inv(b)[6]}">${inv(b)[6]}</span>`:"—",b=>inv(b)?inv(b)[6]:""],
+ ["cartera","Cartera mora",b=>cop(get(b,"cartera")),b=>+get(b,"cartera")||0],
+ ["juridico","Jurídicos",b=>get(b,"juridico")||"—",b=>+get(b,"juridico")||0],
+ ["consejo","Próx. consejo",b=>get(b,"consejo")||"—",b=>get(b,"consejo")||"9999"]
+];
+function uniq(k){return [...new Set(BASE.map(b=>b[k]).filter(x=>x&&x!=="—"))].sort()}
+function initFiltros(){
+  $("fr").innerHTML='<option value="">Todos los responsables</option>'+uniq("resp").map(x=>`<option>${x}</option>`).join("");
+  $("fa").innerHTML='<option value="">Todo apoyo contable</option>'+uniq("apoyo").map(x=>`<option>${x}</option>`).join("");
+  $("chips").innerHTML=[["","Todos"],["Alta","Prioridad Alta"],["Media","Media"],["rojo","En rojo"]].map(c=>`<button class="chip ${c[0]===chip?"on":""}" data-c="${c[0]}">${c[1]}</button>`).join("");
+  $("chips").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;chip=b.dataset.c;document.querySelectorAll(".chip").forEach(x=>x.classList.toggle("on",x===b));renderTabla()};
+}
+function renderTabla(){
+  const q=$("q").value.toLowerCase(),fr=$("fr").value,fa=$("fa").value;
+  $("thead").innerHTML=COLS.map(c=>`<th class="${c[0]===sortBy?"s":""}" data-d="${sortDir>0?" ▲":" ▼"}" onclick="ordenar('${c[0]}')">${c[1]}</th>`).join("");
+  const col=COLS.find(c=>c[0]===sortBy)||COLS[1];
+  const rows=BASE.filter(b=>(!q||(b.nombre+b.nit+b.dir).toLowerCase().includes(q))&&(!fr||b.resp===fr)&&(!fa||b.apoyo===fa)&&(!chip||(chip==="rojo"?estado(b)==="rojo":inv(b)&&inv(b)[6]===chip)))
+    .sort((a,b)=>{const x=col[3](a),y=col[3](b);return (x>y?1:x<y?-1:0)*sortDir});
+  $("cnt").textContent=`${rows.length} de ${BASE.length} edificios`;
+  $("tb").innerHTML=rows.map(b=>`<tr class="b" onclick="abrir('${esc(b.nombre)}')">${COLS.map(c=>`<td>${c[2](b)}</td>`).join("")}</tr>`).join("")||`<tr><td colspan="11" style="padding:30px;text-align:center;color:var(--mut)">Sin resultados</td></tr>`;
+}
+function ordenar(k){sortDir=sortBy===k?-sortDir:1;sortBy=k;renderTabla()}
+
+// ================= DOCUMENTOS =================
+function documentos(){
+  $("leg2").innerHTML=[["Completo","ok"],["Parcial","par"],["Vencido","ven"],["Falta","fal"]].map(x=>`<div style="display:flex;gap:6px;align-items:center;font-size:12px"><span class="sw" style="background:${COL[x[1]]}"></span>${x[0]}</div>`).join("");
+  $("reqs").innerHTML=[...REQ].sort((a,b)=>(b[3]+b[4])-(a[3]+a[4])).map(r=>`<div class="dr"><span>${r[0]}</span>${stack([r[1],r[2],r[3],r[4]])}<span style="color:var(--mut);font-size:12px">${r[4]} faltan · ${r[3]} venc.</span></div>`).join("");
+}
+
+// ================= EQUIPO =================
+function equipo(){
+  const grp=(k)=>{const m={};BASE.forEach(b=>{const r=b[k]==="—"?"Sin asignar":b[k];m[r]=m[r]||{e:0,a:0,items:[],f:0,v:0,pc:[]};m[r].e++;m[r].a+=b.aptos||0;m[r].items.push(b);if(inv(b)){m[r].f+=inv(b)[4];m[r].v+=inv(b)[3];m[r].pc.push(inv(b)[5])}});return m};
+  const bars=(m,id)=>{const mx=Math.max(...Object.values(m).map(x=>x.a))||1;$(id).innerHTML=Object.entries(m).sort((a,b)=>b[1].a-a[1].a).map(([n,v])=>`<div class="rk" style="cursor:default"><span class="n">${n}</span><div class="trk"><i data-w="${v.a/mx*100}%" style="background:var(--brand)" data-tip="${v.e} edificios · ${num(v.a)} aptos"></i></div><em>${num(v.a)}</em></div>`).join("")};
+  const R=grp("resp");bars(R,"loadR");bars(grp("apoyo"),"loadA");
+  $("team").innerHTML=Object.entries(R).sort((a,b)=>b[1].a-a[1].a).map(([n,v])=>{
+    const avg=v.pc.length?Math.round(v.pc.reduce((a,b)=>a+b,0)/v.pc.length):null;
+    return `<div class="card"><h3><span class="av">${n[0]}</span>${n}</h3><div class="sub">${v.e} edificios · ${num(v.a)} apartamentos</div>
+    <div class="mini"><div><b style="color:${avg==null?"var(--mut)":pcol(avg)}">${avg==null?"—":avg+"%"}</b><span>Completitud prom.</span></div><div><b>${v.f}</b><span>Docs. faltan</span></div><div><b>${v.v}</b><span>Vencidos</span></div></div>
+    <div class="links">${v.items.map(b=>`<a href="#" onclick="abrir('${esc(b.nombre)}');return false">${b.nombre}</a>`).join("")}</div></div>`}).join("");
+  animar($("v-equipo"));
+}
+
+// ================= FICHA =================
 function abrir(n){
-  const b=BASE.find(x=>x.nombre===n),d=EXTRA[n]||{};
+  const b=BASE.find(x=>x.nombre===n),d=EXTRA[n]||{},i=inv(b);
   $("drawer").innerHTML=`<button class="x" onclick="cerrar()">×</button><h3>${b.nombre}</h3>
-  <div class="meta">NIT ${b.nit||"—"} · ${b.dir||"—"}<br>${b.aptos??"—"} aptos · Portería ${b.porteria||"—"}<br>Responsable: ${b.resp} · Apoyo contable: ${b.apoyo}</div>
-  ${inv(b)?`<div class="meta"><b>Documentación:</b> ${inv(b)[5]}% completa · prioridad ${inv(b)[6]}<br>Completos ${inv(b)[1]} · Parciales ${inv(b)[2]} · Vencidos ${inv(b)[3]} · Faltan ${inv(b)[4]} · ${inv(b)[0]} archivos revisados</div>`:""}
-  <div class="links"><b>OneDrive:</b><br>${SECCIONES.map(s=>`<a target="_blank" href="${ONEDRIVE}${encodeURIComponent(b.nombre)}/${encodeURIComponent(s)}">${s.slice(0,2)} ${s.slice(5)}</a>`).join("")}</div>
-  ${FIELDS.map(([k,l,t,o])=>`<label>${l}</label>`+(t==="sel"?`<select data-k="${k}">${o.map(x=>`<option ${((d[k]||"sin dato")===x)?"selected":""}>${x}</option>`).join("")}</select>`
-    :t==="txt"?`<textarea data-k="${k}">${d[k]||""}</textarea>`
-    :`<input data-k="${k}" type="${t==="num"?"number":"date"}" value="${d[k]||""}">`)).join("")}
-  <p><button class="btn" style="background:var(--acc)" onclick="guardar('${n}')">Guardar</button></p>`;
-  $("drawer").classList.add("open");
+  <div class="meta">${b.nit?"NIT "+b.nit+" · ":""}${b.dir||"Sin dirección registrada"}<br>${b.aptos==null?"—":num(b.aptos)+" apartamentos"}${b.porteria?" · Portería "+b.porteria:""}<br>Responsable: <b>${b.resp}</b> · Apoyo contable: <b>${b.apoyo}</b></div>
+  ${i?`<div class="sec">Documentación · prioridad <span class="pill ${i[6]}">${i[6]}</span></div>
+  <div class="donut">${donut(i.slice(1,5),[COL.ok,COL.par,COL.ven,COL.fal],i[5]+"%","completo",130)}
+  <div class="leg" style="flex:1">${[["Completos",1,"ok"],["Parciales",2,"par"],["Vencidos",3,"ven"],["Faltan",4,"fal"]].map(x=>`<div><span class="sw" style="background:${COL[x[2]]}"></span>${x[0]}<b>${i[x[1]]}</b></div>`).join("")}<div style="color:var(--mut);font-size:12px;margin-top:6px">${num(i[0])} archivos revisados</div></div></div>`:`<div class="sec">Documentación</div><div style="color:var(--mut)">Sin inventario documental para este edificio.</div>`}
+  <div class="sec">Carpetas en OneDrive</div>
+  <div class="links">${SECCIONES.map(s=>`<a target="_blank" rel="noopener" href="${ONEDRIVE}${encodeURIComponent(b.nombre)}/${encodeURIComponent(s)}">${s.slice(0,2)} · ${s.slice(5)}</a>`).join("")}</div>
+  <div class="sec">Seguimiento (editable)</div>
+  ${FIELDS.map(([k,l,t,o])=>`<label>${l}</label>`+(t==="sel"?`<select data-k="${k}">${o.map(x=>`<option ${((d[k]||"sin dato")===x)?"selected":""}>${x}</option>`).join("")}</select>`:t==="txt"?`<textarea data-k="${k}">${d[k]||""}</textarea>`:`<input data-k="${k}" type="${t==="num"?"number":"date"}" value="${d[k]||""}">`)).join("")}
+  <button class="btn" onclick="guardar('${esc(n)}')">Guardar cambios</button>`;
+  $("drawer").classList.add("open");$("ov").classList.add("on");animar($("drawer"));
 }
-function cerrar(){$("drawer").classList.remove("open")}
-function guardar(n){
-  const d={};document.querySelectorAll("#drawer [data-k]").forEach(e=>{if(e.value)d[e.dataset.k]=e.value});
-  EXTRA[n]=d;save();cerrar();render();
+function cerrar(){$("drawer").classList.remove("open");$("ov").classList.remove("on")}
+function guardar(n){const d={};document.querySelectorAll("#drawer [data-k]").forEach(e=>{if(e.value&&e.value!=="sin dato")d[e.dataset.k]=e.value});EXTRA[n]=d;save();cerrar();todo()}
+function exportar(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(EXTRA,null,2)],{type:"application/json"}));a.download="tablero-rr-datos.json";a.click()}
+function importar(i){const f=i.files[0];if(!f)return;f.text().then(t=>{EXTRA=JSON.parse(t);save();todo()})}
+
+// ================= NAVEGACIÓN / TEMA =================
+function ir(v){
+  document.querySelectorAll(".view").forEach(s=>s.classList.toggle("on",s.id==="v-"+v));
+  document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));
+  location.hash=v;
+  if(v==="resumen")resumen();if(v==="equipo")equipo();if(v==="edificios")renderTabla();if(v==="documentos")documentos();
+  scrollTo(0,0);
 }
-function exportar(){
-  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(EXTRA,null,2)],{type:"application/json"}));
-  a.download="tablero-rr-datos.json";a.click();
-}
-function importar(i){
-  const f=i.files[0];if(!f)return;
-  f.text().then(t=>{EXTRA=JSON.parse(t);save();render()});
-}
-initFilters();render();
+$("nav").onclick=e=>{const b=e.target.closest("button");if(b)ir(b.dataset.v)};
+$("th").onclick=()=>{const d=document.documentElement.dataset.theme==="dark"?"light":"dark";document.documentElement.dataset.theme=d;localStorage.setItem("rr-theme",d)};
+document.addEventListener("keydown",e=>{if(e.key==="Escape")cerrar()});
+function todo(){const v=(location.hash||"#resumen").slice(1);ir(["resumen","edificios","documentos","equipo"].includes(v)?v:"resumen")}
+document.documentElement.dataset.theme=localStorage.getItem("rr-theme")||"light";
+$("fecha").textContent=new Date().toLocaleDateString("es-CO",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+initFiltros();todo();
 </script>
 </body>
 </html>
