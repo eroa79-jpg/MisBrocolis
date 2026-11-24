@@ -195,7 +195,7 @@ footer{color:var(--mut);font-size:12px;padding:10px 24px 30px;text-align:center}
 <script>
 // ================= DATOS =================
 const BASE=[
-["72 HUB","","",904,"","—","—",""],["ALMA 72","","",null,"","—","—",""],
+["72 HUB","","Kr 26 #71B-30 · Primera etapa",208,"","—","—",""],["ALMA 72","","Kr 26 #71B-30 · Segunda etapa",176,"","—","—",""],
 ["ALBEROBELLO","900154519-6","Carrera 16 #86A-65",10,"3053395843","Liliana B","Halisson","A"],
 ["AMERICANO","800162359-5","Carrera 13 #38-76",102,"2856292","Josmary Veliz","Halisson","A/E"],
 ["BASIKA 71","900616402-7","Calle 71 #3-07",29,"3176490940","Liliana B","Leydi","E"],
@@ -220,6 +220,8 @@ const BASE=[
 ["UNIQUE MINE","","",223,"","—","—",""]
 ].map(r=>({nombre:r[0],nit:r[1],dir:r[2],aptos:r[3],porteria:r[4],resp:r[5],apoyo:r[6],grupo:r[7]}));
 
+// Composición según RPH (Escritura Pública 3403 de 2025; informe del 3-oct-2026). "aptos" = solo apartamentos.
+const COMP={"72 HUB":"48 locales · 341 parqueaderos · 247 depósitos · coef. 64,31 %","ALMA 72":"9 locales · 72 parqueaderos · 94 depósitos · coef. 35,69 %"};
 // [archivos, completo, parcial, vencido, falta, %, prioridad]  (Inventario_Informacion_Faltante, 23-oct-2026)
 const INV={"72 HUB":[1363,4,10,0,5,47,"Media"],"ALBEROBELLO":[15,4,4,0,10,33,"Alta"],"AMERICANO":[16,4,4,1,9,33,"Alta"],"BASIKA 71":[26,3,2,4,9,22,"Alta"],"CABRERA 85 12":[174,3,8,2,6,37,"Media"],"CALABRIA VIRREY":[25,4,3,2,9,31,"Alta"],"CANVAS":[94,4,5,2,7,36,"Media"],"COUNTRY VIRREY PH":[45,7,3,2,6,47,"Media"],"EDIFICIO DC":[1493,6,9,2,1,58,"Media"],"EGOBOX M35":[2048,1,7,1,9,25,"Alta"],"ESPACIO 86 PH":[47,4,3,1,10,31,"Alta"],"KUBIK 4":[39,3,4,2,9,28,"Alta"],"NEXT LIVING 57":[32,4,3,2,10,29,"Alta"],"PORTAL II":[12,4,2,0,12,28,"Alta"],"PRADOS DEL COUNTRY":[49,4,7,1,6,42,"Media"],"PROA":[37,4,3,2,9,31,"Alta"],"RINCON DE LA CABRERA":[90,3,2,1,12,22,"Alta"],"RIONIMA 1":[11,3,3,0,12,25,"Alta"],"SOLAR DEL VIRREY":[21,4,4,1,9,33,"Alta"],"TIVOLI":[30,5,4,0,9,39,"Media"],"TRIBECA94":[19,1,5,0,12,19,"Alta"],"TRUANDO":[50,2,4,2,10,22,"Alta"],"UNIQUE MINE":[204,5,11,0,3,55,"Media"]};
 // requisito, completo, parcial, vencido, falta
@@ -366,7 +368,7 @@ function equipo(){
 function abrir(n){
   const b=BASE.find(x=>x.nombre===n),d=EXTRA[n]||{},i=inv(b);
   $("drawer").innerHTML=`<button class="x" onclick="cerrar()">×</button><h3>${b.nombre}</h3>
-  <div class="meta">${b.nit?"NIT "+b.nit+" · ":""}${b.dir||"Sin dirección registrada"}<br>${b.aptos==null?"—":num(b.aptos)+" apartamentos"}${b.porteria?" · Portería "+b.porteria:""}<br>Responsable: <b>${b.resp}</b> · Apoyo contable: <b>${b.apoyo}</b></div>
+  <div class="meta">${b.nit?"NIT "+b.nit+" · ":""}${b.dir||"Sin dirección registrada"}<br>${b.aptos==null?"—":num(b.aptos)+" apartamentos"}${COMP[b.nombre]?" · "+COMP[b.nombre]:""}${b.porteria?" · Portería "+b.porteria:""}<br>Responsable: <b>${b.resp}</b> · Apoyo contable: <b>${b.apoyo}</b></div>
   ${i?`<div class="sec">Documentación · prioridad <span class="pill ${i[6]}">${i[6]}</span></div>
   <div class="donut">${donut(i.slice(1,5),[COL.ok,COL.par,COL.ven,COL.fal],i[5]+"%","completo",130)}
   <div class="leg" style="flex:1">${[["Completos",1,"ok"],["Parciales",2,"par"],["Vencidos",3,"ven"],["Faltan",4,"fal"]].map(x=>`<div><span class="sw" style="background:${COL[x[2]]}"></span>${x[0]}<b>${i[x[1]]}</b></div>`).join("")}<div style="color:var(--mut);font-size:12px;margin-top:6px">${num(i[0])} archivos revisados</div></div></div>`:`<div class="sec">Documentación</div><div style="color:var(--mut)">Sin inventario documental para este edificio.</div>`}
